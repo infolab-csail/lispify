@@ -13,7 +13,7 @@ try:
 except ImportError:
     import unittest
 
-from wikipediabase.lispify import lispify
+from lispify.lispify import lispify
 
 
 class TestLispify(unittest.TestCase):

@@ -1,6 +1,6 @@
 """
 Lispify converts Python objects into Lisp-like encoded strings that are
-readable by START.
+interpretable in Common Lisp.
 
 Use the 'lispify' function to encode a Python object.
 To create a new way of interpreting data subclass the LispType class.
@@ -12,8 +12,7 @@ so that the lispify method ignores it.
 from numbers import Number
 import warnings
 
-from wikipediabase.log import Logging
-from wikipediabase.util import subclasses, camel_case_to_lisp_name
+from util import subclasses, camel_case_to_lisp_name
 
 
 # For fully deterministic lisp types use this priority.
@@ -36,11 +35,11 @@ def mid_priority():
 MID_PRIORITY = mid_priority()
 
 
-class LispType(Logging):
+class LispType(object):
 
     """
-    A LispType is a Lisp-like encoded string that is readable by START.
-    Its `val` attribute is a Python object.
+    A LispType is a Lisp-like encoded string that is interpretable in
+    Common Lisp. Its `val` attribute is a Python object.
 
     Note that not only answers but also questions are lispified.
 
@@ -219,8 +218,8 @@ class LispError(LispType):
     """
     An error with a symbol. The expected value should be an exception
     with the class name as desired symbol name and the following attributes:
-    :message  for Python exceptions
-    :reply    for error messages that can be displayed to START users
+    :message  a message for internal debugging (used for Python exceptions)
+    :reply    a reply message that is okay to show users
               (e.g. death-date for a person that is still alive)
     """
 
