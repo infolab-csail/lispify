@@ -10,6 +10,9 @@ setup(
         'lispify',
         'tests',
     ],
+    install_requires=[
+        'six',
+    ],
     tests_require=[
         'nose>=1.0',
     ],

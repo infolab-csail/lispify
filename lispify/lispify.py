@@ -10,6 +10,7 @@ so that the lispify method ignores it.
 """
 
 from numbers import Number
+from six import string_types
 import warnings
 
 try:
@@ -103,7 +104,7 @@ class LispType(object):
         # compare LispType objects based on their string representation
         if isinstance(other, self.__class__):
             return self.__str__() == other.__str__()
-        elif isinstance(other, basestring):
+        elif isinstance(other, string_types):
             return self.__str__() == other
 
         return False
@@ -116,7 +117,7 @@ class LispString(LispType):
     priority = next(MID_PRIORITY)
 
     def should_parse(self):
-        return isinstance(self.val, basestring)
+        return isinstance(self.val, string_types)
 
     def val_str(self):
         v = self.val.replace('"', '\\"')  # escape double quotes
@@ -178,7 +179,7 @@ class LispDict(LispType):
         if k is None:
             return u"%s" % v
 
-        if isinstance(k, basestring):
+        if isinstance(k, string_types):
             return u":%s %s" % (k, v)
 
     def _paren_content_iter(self, pairs):
@@ -252,7 +253,7 @@ class LispError(LispType):
         if k is None:
             return u"%s" % v
 
-        if isinstance(k, basestring):
+        if isinstance(k, string_types):
             return u":%s %s" % (k, v)
 
     def _paren_content_iter(self, pairs):
@@ -287,7 +288,7 @@ class LispKeyword(_LispLiteral):
     """
 
     def should_parse(self):
-        return isinstance(self.val, basestring) and self.val.startswith(':') \
+        return isinstance(self.val, string_types) and self.val.startswith(':') \
             and ' ' not in self.val
 
     def val_str(self):
