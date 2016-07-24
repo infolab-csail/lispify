@@ -28,7 +28,7 @@ def mid_priority():
     Just count. Later classes override previous ones.
     """
 
-    for i in xrange(MIN_PRIORITY + 1, MAX_PRIORITY):
+    for i in range(MIN_PRIORITY + 1, MAX_PRIORITY):
         yield i
 
     while True:
