@@ -12,7 +12,10 @@ so that the lispify method ignores it.
 from numbers import Number
 import warnings
 
-from util import subclasses, camel_case_to_lisp_name
+try:
+    from util import subclasses, camel_case_to_lisp_name
+except ImportError:
+    from lispify.util import subclasses, camel_case_to_lisp_name
 
 
 # For fully deterministic lisp types use this priority.
@@ -197,7 +200,7 @@ class LispDate(LispDict):
     priority = next(MID_PRIORITY)
 
     # dictionary keys that indicate date format should be treated differently
-    keywords = {"yyyymmdd"}
+    keywords = ["yyyymmdd"]
 
     def should_parse(self):
         if isinstance(self.val, dict):
