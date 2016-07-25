@@ -326,7 +326,7 @@ class LispNumber(_LispLiteral):
         return str(self.val)
 
 
-WIKIBASE_LISP_TYPES = subclasses(LispType, instantiate=False)
+LISP_TYPES = subclasses(LispType, instantiate=False)
 
 
 def lispify(obj):
@@ -337,7 +337,7 @@ def lispify(obj):
     if isinstance(obj, LispType):
         return obj
 
-    for T in WIKIBASE_LISP_TYPES:
+    for T in LISP_TYPES:
         try:
             return T(obj)
         except ValueError:
