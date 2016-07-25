@@ -13,10 +13,7 @@ from numbers import Number
 from six import string_types
 import warnings
 
-try:
-    from util import subclasses, camel_case_to_lisp_name
-except ImportError:
-    from lispify.util import subclasses, camel_case_to_lisp_name
+from .util import subclasses, camel_case_to_lisp_name
 
 
 # For fully deterministic lisp types use this priority.
