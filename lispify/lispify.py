@@ -12,7 +12,7 @@ so that the lispify method ignores it.
 from numbers import Number
 import warnings
 
-from .util import subclasses, camel_case_to_lisp_name
+from util import subclasses, camel_case_to_lisp_name
 
 
 # For fully deterministic lisp types use this priority.
