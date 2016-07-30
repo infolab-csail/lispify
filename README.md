@@ -1,5 +1,5 @@
 # Lispify [![Build Status](https://travis-ci.org/infolab-csail/lispify.svg?branch=master)](https://travis-ci.org/infolab-csail/lispify) [![codecov](https://codecov.io/gh/infolab-csail/lispify/branch/master/graph/badge.svg)](https://codecov.io/gh/infolab-csail/lispify)
-Lispify converts Python objects into Lisp-like encoded strings that are interpretable in Common Lisp.
+Lispify converts Python objects into Lisp-like encoded strings that are interpretable in Common Lisp. This library requires Python 2.6, 2.7, or 3.3+.
 
 ## Releases
 
