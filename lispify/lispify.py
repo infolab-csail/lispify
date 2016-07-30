@@ -13,7 +13,7 @@ from numbers import Number
 from sys import version_info
 import warnings
 
-from .util import subclasses, camel_case_to_lisp_name
+from util import subclasses, camel_case_to_lisp_name
 
 # python 3 compatibility functions
 def string_types():
