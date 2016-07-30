@@ -12,15 +12,13 @@ so that the lispify method ignores it.
 from __future__ import absolute_import
 
 from numbers import Number
-from sys import version_info
 import warnings
 
 from lispify.util import subclasses, camel_case_to_lisp_name
 
+from future.utils import python_2_unicode_compatible
+from past.builtins import basestring
 
-# python 3 compatibility functions
-def string_types():
-    return str if version_info.major > 2 else basestring
 
 # For fully deterministic lisp types use this priority.
 MIN_PRIORITY = 0
@@ -31,7 +29,6 @@ def mid_priority():
     """
     Just count. Later classes override previous ones.
     """
-
     for i in range(MIN_PRIORITY + 1, MAX_PRIORITY):
         yield i
 
@@ -42,6 +39,7 @@ def mid_priority():
 MID_PRIORITY = mid_priority()
 
 
+@python_2_unicode_compatible
 class LispType(object):
 
     """
@@ -88,12 +86,6 @@ class LispType(object):
                                   repr(self.original_val))
 
     def __str__(self):
-        if version_info.major >= 3:
-            return self.__unicode__()
-        else:
-            return unicode(self).encode('utf-8')
-
-    def __unicode__(self):
         # we do u'{}'.format twice so bad val_str implementation still works
         return u'{}'.format(self.val_str())
 
@@ -118,7 +110,7 @@ class LispString(LispType):
     priority = next(MID_PRIORITY)
 
     def should_parse(self, val):
-        return isinstance(val, string_types())
+        return isinstance(val, basestring)
 
     def val_str(self):
         v = self.val.replace('"', '\\"')  # escape double quotes
@@ -136,7 +128,7 @@ class LispList(LispType):
     literal = True
 
     def should_parse(self, val):
-        return hasattr(val, '__iter__') and not isinstance(val, string_types())
+        return hasattr(val, '__iter__') and not isinstance(val, basestring)
 
     def erepr(self, v):
         if isinstance(v, LispType):
@@ -179,7 +171,7 @@ class LispDict(LispType):
     def _kv_pair(self, k, v):
         if k is None:
             return u':{}'.format(v)
-        elif isinstance(k, string_types()):
+        elif isinstance(k, basestring):
             return u':{} {}'.format(k, v)
         else:
             raise ValueError('Key {} must be None or string'.format(k))
@@ -275,7 +267,7 @@ class LispKeyword(_LispLiteral):
     """
 
     def should_parse(self, val):
-        return (isinstance(val, string_types()) and
+        return (isinstance(val, basestring) and
                 val.startswith(':') and
                 ' ' not in val)
 
