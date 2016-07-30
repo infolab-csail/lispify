@@ -12,4 +12,3 @@ Version numbers `MAJOR.MINOR.PATCH` should follow a system inspired by [semantic
 1. PATCH version when you make backwards-compatible bug fixes.
 
 Create a [release](https://help.github.com/articles/creating-releases/) on Github for each new version.
->>>>>>> master
