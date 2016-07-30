@@ -107,6 +107,11 @@ class LispType(object):
 
 
 class LispString(LispType):
+
+    """
+    Encodes a Lisp string.
+    """
+
     priority = next(MID_PRIORITY)
 
     def should_parse(self, val):
@@ -121,7 +126,7 @@ class LispString(LispType):
 class LispList(LispType):
 
     """
-    This is coordinates and other things like that
+    Encodes iterable objects (except for strings) as a list.
     """
 
     priority = next(MID_PRIORITY)
@@ -238,7 +243,7 @@ class LispError(LispDict):
                 keys=self._plist(kw.items())
             )
         else:
-            return u'(:error %s)'.format(symbol)
+            return u'(:error {})'.format(symbol)
 
     def __nonzero__(self):
         """
@@ -304,14 +309,13 @@ class LispNumber(_LispLiteral):
         return isinstance(val, Number)
 
 
-LISP_TYPES = subclasses(LispType, instantiate=False)
+LISP_TYPES = subclasses(LispType)
 
 
 def lispify(obj):
     """
     Return a Lisp-like encoded string.
     """
-
     if isinstance(obj, LispType):
         return obj
 

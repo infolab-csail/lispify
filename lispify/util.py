@@ -2,10 +2,9 @@ from itertools import chain
 import re
 
 
-def subclasses(cls, instantiate=True, **kw):
+def subclasses(cls):
     """
-    A list of instances of subclasses of cls. Instantiate wit kw and
-    return just the classes with instantiate=False.
+    A list of subclasses of cls.
     """
 
     lcls = cls.__subclasses__()
@@ -16,11 +15,7 @@ def subclasses(cls, instantiate=True, **kw):
 
     clss = sorted(rcls, key=lambda c: c.priority, reverse=True)
 
-    if not instantiate:
-        return [C for C in clss
-                if not C.__name__.startswith("_")]
-
-    return [C(**kw) for C in clss
+    return [C for C in clss
             if not C.__name__.startswith("_")]
 
 

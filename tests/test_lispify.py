@@ -32,12 +32,12 @@ class TestLispify(unittest.TestCase):
         self.assertEqual(to_lisp_string('foo \\ "bar"'),
                          '"foo \\ \\"bar\\""')
 
-    @unittest.skipUnless(version_info.major == 3, 'python 3 string behavior')
+    @unittest.skipIf(version_info < (3,), 'python 3 string behavior')
     def test_encodings_py3(self):
         self.assertEqual(to_lisp_string(u"föø ” "),
                          u'"föø ” "')
 
-    @unittest.skipUnless(version_info.major == 2, 'python 2 string behavior')
+    @unittest.skipIf(version_info > (3,), 'python 2 string behavior')
     def test_encodings_py2(self):
         self.assertEqual(to_lisp_string(u"föø ” "),
                          u'"föø ” "'.encode('utf-8'))
@@ -115,6 +115,10 @@ class TestLispify(unittest.TestCase):
         self.assertEqual(to_lisp_string(err),
                          '(:error value-error :message "Wrong thing")')
 
+        err = NotImplementedError()
+        self.assertEqual(to_lisp_string(err),
+                         '(:error not-implemented-error)')
+
     def test_none(self):
         self.assertEqual(to_lisp_string(None), 'nil')
 
@@ -124,6 +128,10 @@ class TestLispify(unittest.TestCase):
     def test_lispified(self):
         val = {"hello": "world"}
         self.assertEqual(lispify(val), lispify(lispify(val)))
+
+    def test_partially_lispified(self):
+        val = [lispify(1), lispify(2)]
+        self.assertEqual(to_lisp_string(val), '(1 2)')
 
     @unittest.expectedFailure
     def test_unimplemented(self):
