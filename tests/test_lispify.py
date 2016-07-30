@@ -32,17 +32,17 @@ class TestLispify(unittest.TestCase):
         self.assertEqual(to_lisp_string('foo \\ "bar"'),
                          '"foo \\ \\"bar\\""')
 
-    @unittest.skipIf(version_info < (3,), 'python 3 string behavior')
-    def test_encodings_py3(self):
-        self.assertEqual(to_lisp_string(u"föø ” "),
-                         u'"föø ” "')
-
-    @unittest.skipIf(version_info > (3,), 'python 2 string behavior')
-    def test_encodings_py2(self):
-        self.assertEqual(to_lisp_string(u"föø ” "),
-                         u'"föø ” "'.encode('utf-8'))
-        self.assertEqual(unicode(lispify(u"föø ” ")),
-                         u'"föø ” "')
+    def test_encodings(self):
+        if version_info < (3,):
+            # python 2 behavior
+            self.assertEqual(to_lisp_string(u"föø ” "),
+                             u'"föø ” "'.encode('utf-8'))
+            self.assertEqual(unicode(lispify(u"föø ” ")),
+                             u'"föø ” "')
+        else:
+            # python 3 behavior
+            self.assertEqual(to_lisp_string(u"föø ” "),
+                             u'"föø ” "')
 
     def test_list(self):
         l = ['wikipedia-class1', 'wikipedia-class2']
