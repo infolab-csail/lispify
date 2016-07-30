@@ -67,7 +67,7 @@ class LispType(object):
         if self.should_parse(val):
             self.val = self.parse_val(val)
         else:
-            raise ValueError(u'failed to lispify {}'.format(val))
+            raise ValueError(u'failed to lispify {0}'.format(val))
 
     def should_parse(self, val):
         """
@@ -87,10 +87,10 @@ class LispType(object):
 
     def __str__(self):
         # we do u'{}'.format twice so bad val_str implementation still works
-        return u'{}'.format(self.val_str())
+        return u'{0}'.format(self.val_str())
 
     def val_str(self):
-        return u'{}'.format(self.val)
+        return u'{0}'.format(self.val)
 
     def __nonzero__(self):
         return True
@@ -140,13 +140,13 @@ class LispList(LispType):
             return v.val_str()
 
         try:
-            return u'{}'.format(lispify(v))
+            return u'{0}'.format(lispify(v))
         except NotImplementedError:
             warnings.warn('Lispifying an unknown type!')
             return repr(v)
 
     def val_str(self):
-        return u'({})'.format(' '.join([self.erepr(v) for v in self.val]))
+        return u'({0})'.format(' '.join([self.erepr(v) for v in self.val]))
 
     def __contains__(self, val):
         return (self.erepr(val) in map(self.erepr, self.val))
@@ -165,7 +165,7 @@ class LispDict(LispType):
 
     def val_str(self):
         pairs = sorted(self.val.items())
-        return u'({})'.format(self._plist(pairs))
+        return u'({0})'.format(self._plist(pairs))
 
     def _plist(self, pairs):
         """
@@ -175,11 +175,11 @@ class LispDict(LispType):
 
     def _kv_pair(self, k, v):
         if k is None:
-            return u':{}'.format(v)
+            return u':{0}'.format(v)
         elif isinstance(k, basestring):
-            return u':{} {}'.format(k, v)
+            return u':{0} {1}'.format(k, v)
         else:
-            raise ValueError('Key {} must be None or string'.format(k))
+            raise ValueError('Key {0} must be None or string'.format(k))
 
     def _paren_content_iter(self, pairs):
         for k, v in pairs:
@@ -243,7 +243,7 @@ class LispError(LispDict):
                 keys=self._plist(kw.items())
             )
         else:
-            return u'(:error {})'.format(symbol)
+            return u'(:error {symbol})'.format(symbol=symbol)
 
     def __nonzero__(self):
         """
@@ -325,7 +325,7 @@ def lispify(obj):
         except ValueError:
             pass
 
-    raise NotImplementedError('Implement LispType for val: {} or provide '
+    raise NotImplementedError('Implement LispType for val: {0} or provide '
                               'fallback error.'.format(obj))
 
 __all__ = ['lispify']
