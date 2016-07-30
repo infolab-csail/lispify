@@ -10,10 +10,14 @@ so that the lispify method ignores it.
 """
 
 from numbers import Number
+from sys import version_info
 import warnings
 
 from .util import subclasses, camel_case_to_lisp_name
 
+# python 3 compatibility functions
+def string_types():
+    return str if version_info.major > 2 else basestring
 
 # For fully deterministic lisp types use this priority.
 MIN_PRIORITY = 0
@@ -45,7 +49,7 @@ class LispType(object):
 
     To use this subclass it and provide any of the following:
 
-    - val_str: string representation
+    - val_str: string representation, should return unicode
     - should_parse
     - parse_val
     """
@@ -57,63 +61,61 @@ class LispType(object):
         """
         Lispify a piece of data. Throws ValueError on failure.
         """
+        self.original_val = val
 
-        self.val = val
-
-        if self.should_parse():
+        if self.should_parse(val):
             self.val = self.parse_val(val)
         else:
-            raise ValueError("failed to lispify %s" % str(self.val))
+            raise ValueError(u'failed to lispify {}'.format(val))
 
-    def should_parse(self):
+    def should_parse(self, val):
         """
         If this returns False, LispType is invalid whatever the value.
         """
-
         return True
 
     def parse_val(self, val):
         """
         Override this to have special value manipulation.
         """
-
         return val
 
     def __repr__(self):
-        r = u"<%s object %s>" % (self.__class__.__name__,
-                                 self.__str__())
-        return r.encode('utf-8')
+        return u'{0}({1})'.format(self.__class__.__name__,
+                                  repr(self.original_val))
 
     def __str__(self):
-        return unicode(self).encode('utf-8')
+        if version_info.major >= 3:
+            return self.__unicode__()
+        else:
+            return unicode(self).encode('utf-8')
 
     def __unicode__(self):
-        return u"%s" % self.val_str()
+        # we do u'{}'.format twice so bad val_str implementation still works
+        return u'{}'.format(self.val_str())
 
     def val_str(self):
-        return unicode(self.val)
+        return u'{}'.format(self.val)
 
     def __nonzero__(self):
         return True
 
     def __eq__(self, other):
-        # compare LispType objects based on their string representation
-        if isinstance(other, self.__class__):
-            return self.__str__() == other.__str__()
-        elif isinstance(other, basestring):
-            return self.__str__() == other
+        if isinstance(other, LispType):
+            # compare LispType objects based on their string representation
+            return str(self) == str(other)
 
         return False
 
     def __hash__(self):
-        return hash(self.__str__())
+        return hash(str(self))
 
 
 class LispString(LispType):
     priority = next(MID_PRIORITY)
 
-    def should_parse(self):
-        return isinstance(self.val, basestring)
+    def should_parse(self, val):
+        return isinstance(val, string_types())
 
     def val_str(self):
         v = self.val.replace('"', '\\"')  # escape double quotes
@@ -130,20 +132,21 @@ class LispList(LispType):
     priority = next(MID_PRIORITY)
     literal = True
 
-    def should_parse(self):
-        return hasattr(self.val, '__iter__')
+    def should_parse(self, val):
+        return hasattr(val, '__iter__') and not isinstance(val, string_types())
 
     def erepr(self, v):
         if isinstance(v, LispType):
-            return unicode(v)
+            return v.val_str()
 
         try:
-            return unicode(lispify(v))
+            return u'{}'.format(lispify(v))
         except NotImplementedError:
+            warnings.warn('Lispifying an unknown type!')
             return repr(v)
 
     def val_str(self):
-        return u"(%s)" % (" ".join([self.erepr(v) for v in self.val]))
+        return u'({})'.format(' '.join([self.erepr(v) for v in self.val]))
 
     def __contains__(self, val):
         return (self.erepr(val) in map(self.erepr, self.val))
@@ -157,26 +160,26 @@ class LispDict(LispType):
 
     priority = next(MID_PRIORITY)
 
-    def should_parse(self):
-        return isinstance(self.val, dict)
+    def should_parse(self, val):
+        return isinstance(val, dict)
 
     def val_str(self):
         pairs = sorted(self.val.items())
-        return u'(%s)' % self._plist(pairs)
+        return u'({})'.format(self._plist(pairs))
 
     def _plist(self, pairs):
         """
         A lispy plist without the parens.
         """
-
-        return " ".join(list(self._paren_content_iter(pairs)))
+        return u' '.join(list(self._paren_content_iter(pairs)))
 
     def _kv_pair(self, k, v):
         if k is None:
-            return u"%s" % v
-
-        if isinstance(k, basestring):
-            return u":%s %s" % (k, v)
+            return u':{}'.format(v)
+        elif isinstance(k, string_types()):
+            return u':{} {}'.format(k, v)
+        else:
+            raise ValueError('Key {} must be None or string'.format(k))
 
     def _paren_content_iter(self, pairs):
         for k, v in pairs:
@@ -199,10 +202,10 @@ class LispDate(LispDict):
     # dictionary keys that indicate date format should be treated differently
     keywords = ["yyyymmdd"]
 
-    def should_parse(self):
-        if isinstance(self.val, dict):
-            if any([(kw in self.val) for kw in self.keywords]):
-                return True
+    def should_parse(self, val):
+        if super(LispDate, self).should_parse(val):
+            return any([(kw in val) for kw in self.keywords])
+        return False
 
     def _paren_content_iter(self, pairs):
         for k, v in pairs:
@@ -213,7 +216,7 @@ class LispDate(LispDict):
                     yield self._kv_pair(k, lispify(v))
 
 
-class LispError(LispType):
+class LispError(LispDict):
 
     """
     An error with a symbol. The expected value should be an exception
@@ -225,37 +228,22 @@ class LispError(LispType):
 
     priority = MAX_PRIORITY
 
-    def should_parse(self):
-        return isinstance(self.val, Exception)
+    def should_parse(self, val):
+        return isinstance(val, Exception)
 
     def val_str(self):
         symbol = camel_case_to_lisp_name(type(self.val).__name__)
         kw = self.val.__dict__
-        if self.val.message:
-            kw.update({'message': self.val.message})
+        if len(self.val.args) > 0:
+            kw.update({'message': self.val.args[0]})
 
         if kw:
-            return u"(:error {symbol} {keys})".format(
+            return u'(:error {symbol} {keys})'.format(
                 symbol=symbol,
                 keys=self._plist(kw.items())
             )
         else:
-            return u"(:error %s)" % symbol
-
-    def _plist(self, pairs):
-        return " ".join(list(self._paren_content_iter(pairs)))
-
-    def _kv_pair(self, k, v):
-        if k is None:
-            return u"%s" % v
-
-        if isinstance(k, basestring):
-            return u":%s %s" % (k, v)
-
-    def _paren_content_iter(self, pairs):
-        for k, v in pairs:
-            if v is not None:
-                yield self._kv_pair(k, lispify(v))
+            return u'(:error %s)'.format(symbol)
 
     def __nonzero__(self):
         """
@@ -264,7 +252,6 @@ class LispError(LispType):
         if potential_error_or_none:
             # do stuff
         """
-
         return False
 
 
@@ -273,6 +260,7 @@ class _LispLiteral(LispType):
     """
     Lisp literals. These are not.
     """
+
     priority = MAX_PRIORITY
     literal = True
 
@@ -283,12 +271,10 @@ class LispKeyword(_LispLiteral):
     Just a keyword. No content.
     """
 
-    def should_parse(self):
-        return isinstance(self.val, basestring) and self.val.startswith(':') \
-            and ' ' not in self.val
-
-    def val_str(self):
-        return self.val
+    def should_parse(self, val):
+        return (isinstance(val, string_types()) and
+                val.startswith(':') and
+                ' ' not in val)
 
 
 class LispBool(_LispLiteral):
@@ -297,8 +283,8 @@ class LispBool(_LispLiteral):
     Lispify a boolean value
     """
 
-    def should_parse(self):
-        return isinstance(self.val, bool)
+    def should_parse(self, val):
+        return isinstance(val, bool)
 
     def val_str(self):
         return u't' if self.val else u'nil'
@@ -310,8 +296,8 @@ class LispNone(_LispLiteral):
     Lispified none object
     """
 
-    def should_parse(self):
-        return self.val is None
+    def should_parse(self, val):
+        return val is None
 
     def val_str(self):
         return u'nil'
@@ -319,11 +305,8 @@ class LispNone(_LispLiteral):
 
 class LispNumber(_LispLiteral):
 
-    def should_parse(self):
-        return isinstance(self.val, Number)
-
-    def val_str(self):
-        return str(self.val)
+    def should_parse(self, val):
+        return isinstance(val, Number)
 
 
 LISP_TYPES = subclasses(LispType, instantiate=False)
@@ -343,7 +326,7 @@ def lispify(obj):
         except ValueError:
             pass
 
-    raise NotImplementedError(
-        "Implement LispType for val: %s or provide fallback error." % obj)
+    raise NotImplementedError('Implement LispType for val: {} or provide '
+                              'fallback error.'.format(obj))
 
 __all__ = ['lispify']
