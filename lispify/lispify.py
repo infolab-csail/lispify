@@ -9,11 +9,13 @@ Prefix your class with an underscore (_) if it is an intermediate representation
 so that the lispify method ignores it.
 """
 
+from __future__ import absolute_import
+
 from numbers import Number
 from sys import version_info
 import warnings
 
-from util import subclasses, camel_case_to_lisp_name
+from lispify.util import subclasses, camel_case_to_lisp_name
 
 
 # python 3 compatibility functions
