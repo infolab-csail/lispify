@@ -15,6 +15,7 @@ import warnings
 
 from util import subclasses, camel_case_to_lisp_name
 
+
 # python 3 compatibility functions
 def string_types():
     return str if version_info.major > 2 else basestring
