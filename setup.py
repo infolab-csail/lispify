@@ -14,6 +14,7 @@ setup(
         'future',
     ],
     tests_require=[
+        'unittest2',
         'nose>=1.0',
     ],
     test_suite='nose.collector',
