@@ -1,16 +1,15 @@
 language: python
+# we test python 2.7 because it is what we use, we test python 3.4
+# because it is the version of python3 that we have installed, and
+# we test the nightly build to make sure we are all up-to-date
 python:
-  - "2.6"
   - "2.7"
-  - "3.3"
   - "3.4"
-  - "3.5"
-  - "3.5-dev"
   - "nightly"
 install:
   - if [[ $TRAVIS_INSTALL_LIKE_PIP == false ]]; then pip install -r requirements.txt; fi
   - pip install codecov pep8
-  - pip install setuptools==36.8.0
+  - pip install --upgrade setuptools
   - python setup.py install
 script:
   - coverage run setup.py test
