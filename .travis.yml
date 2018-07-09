@@ -10,6 +10,7 @@ python:
 install:
   - if [[ $TRAVIS_INSTALL_LIKE_PIP == false ]]; then pip install -r requirements.txt; fi
   - pip install codecov pep8
+  - pip install setuptools
   - python setup.py install
 script:
   - coverage run setup.py test
