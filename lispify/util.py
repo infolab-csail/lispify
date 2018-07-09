@@ -26,4 +26,3 @@ def camel_case_to_lisp_name(text):
     """
     s = re.sub('(.)([A-Z][a-z]+)', r'\1-\2', text)
     return re.sub('([a-z0-9])([A-Z])', r'\1-\2', s).lower()
-
