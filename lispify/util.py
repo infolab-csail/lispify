@@ -19,10 +19,10 @@ def subclasses(cls):
             if not C.__name__.startswith("_")]
 
 
-def camel_case_to_lisp_name(name):
+def camel_case_to_lisp_name(text):
     """
-    Convert a python CamelCase class name to lisp hyphenated class name.
+    Converts CamelCase text to standard lisp hyphenated text
+    e.g., "educationalInstitution" -> "educational-institution"
     """
-    words = map(lambda s: s.lower(), re.findall('[A-Z][a-z]*', name))
-    lisp_name = '-'.join(words)
-    return lisp_name
+    s = re.sub('(.)([A-Z][a-z]+)', r'\1-\2', text)
+    return re.sub('([a-z0-9])([A-Z])', r'\1-\2', s).lower()
