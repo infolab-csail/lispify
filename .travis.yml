@@ -15,6 +15,7 @@ script:
   - pep8 lispify tests --ignore=E501
 after_success:
   - codecov
+dist: xenial
 env:
     - TRAVIS_INSTALL_LIKE_PIP=true
     - TRAVIS_INSTALL_LIKE_PIP=false
