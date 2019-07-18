@@ -1,10 +1,9 @@
 language: python
-# we test python 2.7 because it is what we use, we test python 3.4
+# we test python 3.7
 # because it is the version of python3 that we have installed, and
 # we test the nightly build to make sure we are all up-to-date
 python:
-  - "2.7"
-  - "3.4"
+  - "3.7"
   - "nightly"
 install:
   - if [[ $TRAVIS_INSTALL_LIKE_PIP == false ]]; then pip install -r requirements.txt; fi
@@ -16,6 +15,7 @@ script:
   - pep8 lispify tests --ignore=E501
 after_success:
   - codecov
+dist: xenial
 env:
     - TRAVIS_INSTALL_LIKE_PIP=true
     - TRAVIS_INSTALL_LIKE_PIP=false
