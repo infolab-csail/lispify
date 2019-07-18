@@ -115,7 +115,7 @@ class LispString(LispType):
     priority = next(MID_PRIORITY)
 
     def should_parse(self, val):
-        return isinstance(val, basestring)
+        return isinstance(val, str)
 
     def val_str(self):
         v = self.val.replace('"', '\\"')  # escape double quotes
@@ -133,7 +133,7 @@ class LispList(LispType):
     literal = True
 
     def should_parse(self, val):
-        return hasattr(val, '__iter__') and not isinstance(val, basestring)
+        return hasattr(val, '__iter__') and not isinstance(val, str)
 
     def erepr(self, v):
         if isinstance(v, LispType):
@@ -176,7 +176,7 @@ class LispDict(LispType):
     def _kv_pair(self, k, v):
         if k is None:
             return u':{0}'.format(v)
-        elif isinstance(k, basestring):
+        elif isinstance(k, str):
             return u':{0} {1}'.format(k, v)
         else:
             raise ValueError('Key {0} must be None or string'.format(k))
@@ -272,7 +272,7 @@ class LispKeyword(_LispLiteral):
     """
 
     def should_parse(self, val):
-        return (isinstance(val, basestring) and
+        return (isinstance(val, str) and
                 val.startswith(':') and
                 ' ' not in val)
 
