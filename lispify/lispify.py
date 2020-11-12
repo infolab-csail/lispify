@@ -176,7 +176,7 @@ class LispDict(LispType):
     def _kv_pair(self, k, v):
         if k is None:
             return u':{0}'.format(v)
-        elif isinstance(k, str):
+        elif isinstance(k, str) or isinstance(k, LispDict):
             return u':{0} {1}'.format(k, v)
         else:
             raise ValueError('Key {0} must be None or string'.format(k))
@@ -186,7 +186,7 @@ class LispDict(LispType):
             if v is not None:
                 # XXX: NastyHack(TM). Replace the nonbreaking space
                 # with a space.
-                yield self._kv_pair(k, lispify(v))
+                yield self._kv_pair(lispify(k), lispify(v))
 
 
 class LispDate(LispDict):
@@ -322,6 +322,7 @@ def lispify(obj):
     for T in LISP_TYPES:
         try:
             return T(obj)
+        
         except ValueError:
             pass
 
